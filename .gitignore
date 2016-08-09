@@ -1,4 +1,5 @@
 twitter_data.txt
+tweets.csv
 articles.csv
 credentials.json
-
+.DS_Store
