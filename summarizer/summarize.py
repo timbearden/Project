@@ -5,6 +5,7 @@ from random import random
 from nltk import sent_tokenize, word_tokenize
 from summary_mining import get_full_article, get_summary_and_full_links
 import pickle
+import re
 from Rouge import rouge_score
 
 
@@ -19,6 +20,10 @@ def unpickle(filename):
         result = pickle.load(f)
     return result
 
+
+def clean_text(text):
+    new_text = re.sub(r'(Advertisement.*?\n)','',text)
+    new_text = re.sub(r'(Photo.*?\n)','',new_text)
 
 def get_vector(vectorizer, document, normalize=False):
     '''
