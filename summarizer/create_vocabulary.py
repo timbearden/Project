@@ -1,6 +1,8 @@
 from pymongo import MongoClient
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from nltk import sent_tokenize, word_tokenize
+from nltk.stem.wordnet import WordNetLemmatizer
+from summarize import clean_text
 import pandas as pd
 import pickle
 
@@ -27,7 +29,14 @@ import pickle
 # mongo_client.close()
 
 articles = pd.read_csv('../data/articles.csv')
-article_list = articles.body
+article_list = articles.body.copy()
+#
+# lem = WordNetLemmatizer()
+#
+# for i in xrange(len(article_list)):
+#     article = ' '.join([lem.lemmatize(lem.lemmatize(word, pos ='v')) for word in article_list[i].split()])
+#     article = ' '.join([lem.lemmatize(lem.lemmatize(word)) for word in article.split()])
+#     article_list[i] = article
 
 tfidf = TfidfVectorizer(stop_words='english')
 tfidf.fit(article_list)

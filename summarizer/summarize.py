@@ -4,6 +4,7 @@ import numpy as np
 from random import random
 from nltk import sent_tokenize, word_tokenize
 from summary_mining import get_full_article, get_summary_and_full_links
+from nltk.stem.wordnet import WordNetLemmatizer
 import pickle
 import re
 from Rouge import rouge_score
@@ -21,9 +22,33 @@ def unpickle(filename):
     return result
 
 
-def clean_text(text):
+def clean_text(text, keep_quotes=True):
+    '''
+    INPUT: string
+    OUTPUT: string
+
+    Cleans up the text to eliminate sentences that are not actually in the article,
+    keeps quotes in tact for when the text is tokenized by sentence.
+    '''
+    split_text = text.split(u'\u201c')
+    if keep_quotes:
+        for i in xrange(len(split_text)):
+            more_split = split_text[i].split(u'\u201d')
+            more_split[0] = more_split[0].replace('.','|')
+            split_text[i] = u'\u201d'.join(more_split)
+    new_text = u'\u201c'.join(split_text)
     new_text = re.sub(r'(Advertisement.*?\n)','',text)
     new_text = re.sub(r'(Photo.*?\n)','',new_text)
+    new_text = re.sub(r'(?<=[A-Z])\.','',new_text)
+    new_text = re.sub(r'(Related.*?\n)','',new_text)
+    new_text = '\n'.join([sentence for sentence in new_text.split('\n') if '.' in sentence])
+    return new_text
+
+def lemmatize(article):
+    lem = WordNetLemmatizer()
+    article_lem = ' '.join([lem.lemmatize(lem.lemmatize(word, pos ='v')) for word in article.split()])
+    article_lem = ' '.join([lem.lemmatize(lem.lemmatize(word)) for word in article_lem.split()])
+    return article_lem
 
 def get_vector(vectorizer, document, normalize=False):
     '''
@@ -183,10 +208,9 @@ def make_summary(summary_array):
 
     Takes an array of sentences for the summary and strings them together into a readable summary.
     '''
-    summary = ""
-    for sentence in summary_array:
-        summary += sentence + ' '
-    return summary.replace('\n\n','\n')
+    summary = ' '.join(summary_array)
+    summary = summary.replace('\n\n','\n').replace('|','.')
+    return summary
 
 
 def print_nice_summary(title, summary, test_summary):
@@ -203,11 +227,17 @@ if __name__ == '__main__':
     # summary_url = 'http://www.newser.com/story/229050/strange-saga-of-sports-legends-remains-is-still-unfolding.html'
     # url = 'http://espn.go.com/espn/feature/story/_/id/17163767/heated-debate-now-lawsuit-burial-ground-jim-thorpe-remains-continues-today'
 
-    summary_url = 'http://www.newser.com/story/229320/nj-weighs-big-fines-for-distracted-drivers-but-coffee-is-likely-safe.html'
-    url = 'http://www.nj.com/traffic/index.ssf/2016/08/cops_could_soon_ticket_you_in_nj_for_drinking_a_coffee_while_driving.html#incart_most-readstarledger'
+    summary_url = 'http://www.newser.com/story/229561/mom-62-charged-after-son-fatally-beats-her-newborn.html'
+    url = 'https://www.washingtonpost.com/news/morning-mix/wp/2016/08/12/boy-6-fatally-pummeled-newborn-sister-when-mom-62-left-them-alone-in-van-police-say/'
+    # url = 'http://money.cnn.com/2016/03/22/pf/college/detroit-tuition-free-college/index.html'
 
     full_text = get_full_article(url)
     test_summary = get_summary_and_full_links(summary_url)[0]
+
+    full_text = clean_text(full_text)
+    sentences = np.array(sent_tokenize(full_text))
+
+    lem_text = lemmatize(full_text)
 
     vocab = unpickle('vocab')
     idf = unpickle('idf')
@@ -215,7 +245,7 @@ if __name__ == '__main__':
     counts = CountVectorizer(stop_words='english',vocabulary=vocab)
     tfidf = TfidfVectorizer(stop_words='english',vocabulary=vocab)
 
-    sentences = np.array(sent_tokenize(full_text))
+    lem_sentences = np.array(sent_tokenize(full_text))
 
     article_count_vector = get_vector(counts, [full_text])[0]
     sentence_count_vector = get_vector(counts, sentences)
@@ -228,26 +258,26 @@ if __name__ == '__main__':
     random_scores = random_baseline(sentences)
     tfidf_small = tfidf_single(sentences)
 
-    sim_summary_array = get_important_sentences(similarities, sentences, num_sentences=5)
-    sig_summary_array = get_important_sentences(significance, sentences, num_sentences=5)
-    tfidf_summary_array = get_important_sentences(tfidf_full, sentences, num_sentences=5)
-    rand_summary_array = get_important_sentences(random_scores, sentences, num_sentences=5)
-    small_tfidf_summary_array = get_important_sentences(tfidf_small, sentences, num_sentences=5)
-    topic_sentences = just_topic_sentences(sentences)
-    first_sentence_array = first_n_sentences(sentences, 5)
+    sim_summary_array = get_important_sentences(similarities, sentences, num_sentences=7)
+    sig_summary_array = get_important_sentences(significance, sentences, num_sentences=7)
+    tfidf_summary_array = get_important_sentences(tfidf_full, sentences, num_sentences=7)
+    rand_summary_array = get_important_sentences(random_scores, sentences, num_sentences=7)
+    small_tfidf_summary_array = get_important_sentences(tfidf_small, sentences, num_sentences=7)
+    # topic_sentences = just_topic_sentences(sentences)
+    first_sentence_array = first_n_sentences(sentences, 7)
 
     tfidf_summary = make_summary(tfidf_summary_array)
     sim_summary = make_summary(sim_summary_array)
     sig_summary = make_summary(sig_summary_array)
     rand_summary = make_summary(rand_summary_array)
     small_tfidf_summary = make_summary(small_tfidf_summary_array)
-    topic_sentence_summary = make_summary(topic_sentences)
+    # topic_sentence_summary = make_summary(topic_sentences)
     first_sentences_summary = make_summary(first_sentence_array)
 
     print_nice_summary('Big TfIdf', tfidf_summary, test_summary)
     print_nice_summary('Similarity', sim_summary, test_summary)
     print_nice_summary('Significance', sig_summary, test_summary)
     print_nice_summary('Small TfIdf', small_tfidf_summary, test_summary)
-    print_nice_summary('Topic Sentences', topic_sentence_summary, test_summary)
+    # print_nice_summary('Topic Sentences', topic_sentence_summary, test_summary)
     print_nice_summary('First Sentences', first_sentences_summary, test_summary)
     print "Random Rouge: ", str(rouge_score(rand_summary, test_summary))
