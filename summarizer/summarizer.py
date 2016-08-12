@@ -3,6 +3,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 from random import random
 from nltk import sent_tokenize, word_tokenize
+from summarize import unpickle
 from summary_mining import get_full_article, get_summary_and_full_links
 import pickle
 import re
@@ -10,20 +11,40 @@ from Rouge import rouge_score
 
 
 class Summarizer(object):
-    def __init__(self, vocab, idf, scoring=None):
+    def __init__(self, vocab, idf=None, scoring=None, vectorizer=None, num_sentences=7):
         self.vocab = vocab
         self.idf = idf
         self.scoring = scoring
-        self.sentence_vector = None
+        self.vectorizer = vectorizer
+        self.article_vector = None
+        self.sentence_vectors = None
         self.article = None
+        self.cleaned = None
         self.summary = None
         self.sentences = None
+        self.lem_sentences = None
+        self.score = None
+        self.num_sentences = num_sentences
 
 
     def set_method(self):
+        if self.scoring == 'multi_Tfidf':
+            self.score = self.tfidf_corpus
+        elif self.scoring == 'single_Tfidf':
+            self.score = self.tfidf_single
+        elif self.scoring == 'significance':
+            self.score = self.significance_factor
+        elif self.scoring == 'similarity':
+            self.score = self.get_sentence_cos_sims
+        else:
+            print "Please pick a valid scoring metric"
 
 
-    def clean_text(self, text, keep_quotes=True):
+    def set_vectorizer(self):
+        pass
+
+
+    def clean_text(self):
         '''
         INPUT: string
         OUTPUT: string
@@ -31,20 +52,21 @@ class Summarizer(object):
         Cleans up the text to eliminate sentences that are not actually in the article,
         keeps quotes in tact for when the text is tokenized by sentence.
         '''
-        split_text = text.split(u'\u201c')
-        if keep_quotes:
-            for i in xrange(len(split_text)):
-                more_split = split_text[i].split(u'\u201d')
-                more_split[0] = more_split[0].replace('.','|')
-                split_text[i] = u'\u201d'.join(more_split)
+        split_text = self.article.split(u'\u201c')
+        for i in xrange(1,len(split_text)):
+            more_split = split_text[i].split(u'\u201d')
+            more_split[0] = more_split[0].replace('.','|')
+            split_text[i] = u'\u201d'.join(more_split)
         new_text = u'\u201c'.join(split_text)
-        new_text = re.sub(r'(Advertisement.*?\n)','',text)
+        new_text = re.sub(r'(Advertisement.*?\n)','',new_text)
         new_text = re.sub(r'(Photo.*?\n)','',new_text)
         new_text = re.sub(r'(?<=[A-Z])\.','',new_text)
+        new_text = re.sub(r'(Related.*?\n)','',new_text)
+        new_text = '\n'.join([sentence for sentence in new_text.split('\n') if '.' in sentence])
         return new_text
 
 
-    def get_vector(self, vectorizer, document, normalize=False):
+    def get_vector(self, document, normalize=False):
         '''
         INPUT: vectorizer object, list/array of document(s), bool (optional)
         OUTPUT: vectorized array
@@ -52,7 +74,7 @@ class Summarizer(object):
         Creates a single vector if given the full news article, or creates an array of vectors
         for each sentence.
         '''
-        vector = vectorizer.fit_transform(document).todense()
+        vector = self.vectorizer.fit_transform(document).todense()
         vector = np.array(vector)
         if normalize:
             norm_vec = [vec/float(len(word_tokenize(doc))) for vec, doc in zip(vector, document)]
@@ -61,22 +83,22 @@ class Summarizer(object):
         return vector
 
 
-    def significance_factor(self,vocab,full_vec,sentences):
+    def significance_factor(self, vectors):
         '''
-        INPUT: vocabulary dictionary, vector array, sentence array
+        INPUT: vocabulary dictionary, vector array
         OUTPUT: array
 
         Scores each sentence based off significance; sums up document counts or tfidf for each
         word in the sentence.
         '''
         sentence_scores = []
-        for sentence in sentences:
-            score = np.sum([full_vec[vocab[word.lower()]] for word in sentence.split() if word.lower() in vocab.keys()])
+        for sentence in self.sentences:
+            score = np.sum([self.article_vector[self.vocab[word.lower()]] for word in sentence.split() if word.lower() in self.vocab.keys()])
             sentence_scores.append(score)
         return np.array(sentence_scores)
 
 
-    def get_sentence_cos_sims(self, sentence_vecs, full_vec):
+    def get_sentence_cos_sims(self, vectors):
         '''
         INPUT: Two vector arrays
         OUTPUT: Array
@@ -84,30 +106,30 @@ class Summarizer(object):
         Scores each sentence based off of cosine similarity to the entire document.
         '''
         similarities = []
-        for vec in sentence_vecs:
+        for vec in vectors:
             nan_idx = np.isnan(vec)
             vec[nan_idx] = 0
-            similarity = cosine_similarity(full_vec, vec).flatten()
+            similarity = cosine_similarity(self.article_vector, vec).flatten()
             similarities.append(similarity)
         similarities = np.array(similarities).flatten()
         return similarities
 
 
-    def tfidf_single(self, sentences, n1=1, n2=1):
+    def tfidf_single(self, vectors):
         '''
-        INPUT: Sentence array, lower n-gram (int), upper n-gram (int)
+        INPUT: vector
         OUTPUT: array
 
         Treats the entire article as a corpus of sentence documents, finds tf-idf
         scores for each sentence.
         '''
-        tfidf_vectorizer = TfidfVectorizer(stop_words='english', ngram_range=(n1,n2))
-        tfidf_mat = tfidf_vectorizer.fit_transform(sentences).todense()
+        tfidf_vectorizer = TfidfVectorizer(stop_words='english')
+        tfidf_mat = tfidf_vectorizer.fit_transform(self.sentences).todense()
         tfidf_scores = np.array(tfidf_mat.sum(axis=1).flatten())[0,:]
         return tfidf_scores
 
 
-    def tfidf_corpus(self, count_vec, sentences, idf, vocab):
+    def tfidf_corpus(self, vectors):
         '''
         INPUT: Vector array, sentence array, idf matrix, vocab dictionary
         OUTPUT: array
@@ -115,26 +137,26 @@ class Summarizer(object):
         Creates tfidf scores for each sentence based off larger corpus of news articles.
         Calculates scores similarly to significance scores.
         '''
-        tfidf = count_vec * idf
+        tfidf = vectors * self.idf
         tfidf_scores = []
-        for sentence in sentences:
-            score = np.sum([tfidf[vocab[word.lower()]] for word in sentence.split() if word.lower() in vocab.keys()])
+        for sentence in self.sentences:
+            score = np.sum([tfidf[self.vocab[word.lower()]] for word in sentence.split() if word.lower() in self.vocab.keys()])
             tfidf_scores.append(score)
         return np.array(tfidf_scores)
 
-    def get_important_sentences(self, importance_ratings, sentences, num_sentences=None):
+    def get_important_sentences(self, importance_ratings):
         '''
-        INPUT: scoring array, sentence array, number of sentences (optional)
+        INPUT: scoring array, number of sentences (optional)
         OUTPUT: array of sentences
 
         Creates an array of important sentences ranked by the given scoring metric.
         '''
         sort_idx = np.argsort(importance_ratings)[::-1]
-        if num_sentences==None:
-            num_sentences = min(max(len(sentences)*0.10, 5), 10)
-        important_sentence_idx = sort_idx[:num_sentences]
+        if self.num_sentences==None:
+            self.num_sentences = min(max(len(self.sentences)*0.10, 5), 10)
+        important_sentence_idx = sort_idx[:self.num_sentences]
         sentence_idx = np.sort(important_sentence_idx)
-        summary_array = sentences[sentence_idx]
+        summary_array = self.sentences[sentence_idx]
         return summary_array
 
     def just_topic_sentences(self, sentences):
@@ -205,3 +227,30 @@ class Summarizer(object):
         summary = ' '.join(summary_array)
         summary = summary.replace('\n\n','\n').replace('|','.')
         return summary
+
+
+    def fit(self, article):
+        self.article = article
+        self.set_method()
+        self.article_vector = self.get_vector([self.article])
+        cleaned = self.clean_text()
+        self.sentences = np.array(sent_tokenize(cleaned))
+        self.sentence_vectors = self.get_vector(self.sentences)
+        scores = self.score(self.sentence_vectors)
+        important_sentences = self.get_important_sentences(scores)
+        self.summary = self.make_summary(important_sentences)
+
+
+if __name__ == '__main__':
+    idf = unpickle('idf')
+    vocab = unpickle('vocab')
+
+    count = CountVectorizer(stop_words='english', vocabulary=vocab)
+
+    full_text = get_full_article('http://www.jsonline.com/story/news/2016/08/12/dassey-wins-ruling-teresa-halbach-murder/88632502/')
+
+    my_sum = Summarizer(vocab, idf, scoring='similarity', vectorizer=count)
+
+    my_sum.fit(full_text)
+
+    print my_sum.summary
