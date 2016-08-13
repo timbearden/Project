@@ -138,11 +138,12 @@ class Summarizer(object):
         Calculates scores similarly to significance scores.
         '''
         tfidf = vectors * self.idf
-        tfidf_scores = []
-        for sentence in self.sentences:
-            score = np.sum([tfidf[self.vocab[word.lower()]] for word in sentence.split() if word.lower() in self.vocab.keys()])
-            tfidf_scores.append(score)
-        return np.array(tfidf_scores)
+        tfidf_scores = tfidf.sum(axis=1)
+        # tfidf_scores = []
+        # for sentence in self.sentences:
+        #     score = np.sum([tfidf[self.vocab[word.lower()]] for word in sentence.split() if word.lower() in self.vocab.keys()])
+        #     tfidf_scores.append(score)
+        return tfidf_scores
 
     def get_important_sentences(self, importance_ratings):
         '''
@@ -232,7 +233,7 @@ class Summarizer(object):
     def fit(self, article):
         self.article = article
         self.set_method()
-        self.article_vector = self.get_vector([self.article])
+        self.article_vector = self.get_vector([self.article]).flatten()
         cleaned = self.clean_text()
         self.sentences = np.array(sent_tokenize(cleaned))
         self.sentence_vectors = self.get_vector(self.sentences)
@@ -249,7 +250,7 @@ if __name__ == '__main__':
 
     full_text = get_full_article('http://www.jsonline.com/story/news/2016/08/12/dassey-wins-ruling-teresa-halbach-murder/88632502/')
 
-    my_sum = Summarizer(vocab, idf, scoring='similarity', vectorizer=count)
+    my_sum = Summarizer(vocab, idf, scoring='significance', vectorizer=count)
 
     my_sum.fit(full_text)
 
