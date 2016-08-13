@@ -7,6 +7,8 @@ from summary_mining import get_full_article, get_summary_and_full_links
 from nltk.stem.wordnet import WordNetLemmatizer
 import pickle
 import re
+import matplotlib.pyplot as plt
+import seaborn
 from Rouge import rouge_score
 
 
@@ -224,12 +226,8 @@ def print_nice_summary(title, summary, test_summary):
 
 
 if __name__ == '__main__':
-    # summary_url = 'http://www.newser.com/story/229050/strange-saga-of-sports-legends-remains-is-still-unfolding.html'
-    # url = 'http://espn.go.com/espn/feature/story/_/id/17163767/heated-debate-now-lawsuit-burial-ground-jim-thorpe-remains-continues-today'
-
-    summary_url = 'http://www.newser.com/story/229561/mom-62-charged-after-son-fatally-beats-her-newborn.html'
-    url = 'https://www.washingtonpost.com/news/morning-mix/wp/2016/08/12/boy-6-fatally-pummeled-newborn-sister-when-mom-62-left-them-alone-in-van-police-say/'
-    # url = 'http://money.cnn.com/2016/03/22/pf/college/detroit-tuition-free-college/index.html'
+    summary_url = 'http://www.newser.com/story/229593/trump-only-cheating-can-cost-me-pennsylvania.html'
+    url = 'https://www.theguardian.com/us-news/2016/aug/13/donald-trump-claims-cheating-is-only-way-he-can-lose-pennsylvania'
 
     full_text = get_full_article(url)
     test_summary = get_summary_and_full_links(summary_url)[0]
@@ -237,47 +235,66 @@ if __name__ == '__main__':
     full_text = clean_text(full_text)
     sentences = np.array(sent_tokenize(full_text))
 
-    lem_text = lemmatize(full_text)
+    # lem_text = lemmatize(full_text)
 
     vocab = unpickle('vocab')
     idf = unpickle('idf')
 
     counts = CountVectorizer(stop_words='english',vocabulary=vocab)
-    tfidf = TfidfVectorizer(stop_words='english',vocabulary=vocab)
+    # tfidf = TfidfVectorizer(stop_words='english',vocabulary=vocab)
 
-    lem_sentences = np.array(sent_tokenize(full_text))
+    # lem_sentences = np.array(sent_tokenize(full_text))
 
     article_count_vector = get_vector(counts, [full_text])[0]
-    sentence_count_vector = get_vector(counts, sentences)
-    article_tfidf_vector = get_vector(tfidf, [full_text])[0]
-    sentence_tfidf_vector = get_vector(tfidf, sentences)
+    # sentence_count_vector = get_vector(counts, sentences)
+    # article_tfidf_vector = get_vector(tfidf, [full_text])[0]
+    # sentence_tfidf_vector = get_vector(tfidf, sentences)
 
-    similarities = get_sentence_cos_sims(sentence_tfidf_vector, article_tfidf_vector)
-    significance = significance_factor(vocab, article_count_vector, sentences)
+    # similarities = get_sentence_cos_sims(sentence_tfidf_vector, article_tfidf_vector)
+    # significance = significance_factor(vocab, article_count_vector, sentences)
     tfidf_full = tfidf_corpus(article_count_vector, sentences, idf, vocab)
-    random_scores = random_baseline(sentences)
-    tfidf_small = tfidf_single(sentences)
+    # random_scores = random_baseline(sentences)
+    # tfidf_small = tfidf_single(sentences)
 
-    sim_summary_array = get_important_sentences(similarities, sentences, num_sentences=7)
-    sig_summary_array = get_important_sentences(significance, sentences, num_sentences=7)
-    tfidf_summary_array = get_important_sentences(tfidf_full, sentences, num_sentences=7)
-    rand_summary_array = get_important_sentences(random_scores, sentences, num_sentences=7)
-    small_tfidf_summary_array = get_important_sentences(tfidf_small, sentences, num_sentences=7)
+    # sim_summary_array = get_important_sentences(similarities, sentences, num_sentences=7)
+    # sig_summary_array = get_important_sentences(significance, sentences, num_sentences=7)
+    # tfidf_summary_array = get_important_sentences(tfidf_full, sentences, num_sentences=7)
+    # rand_summary_array = get_important_sentences(random_scores, sentences, num_sentences=7)
+    # small_tfidf_summary_array = get_important_sentences(tfidf_small, sentences, num_sentences=7)
     # topic_sentences = just_topic_sentences(sentences)
-    first_sentence_array = first_n_sentences(sentences, 7)
+    # first_sentence_array = first_n_sentences(sentences, 7)
 
-    tfidf_summary = make_summary(tfidf_summary_array)
-    sim_summary = make_summary(sim_summary_array)
-    sig_summary = make_summary(sig_summary_array)
-    rand_summary = make_summary(rand_summary_array)
-    small_tfidf_summary = make_summary(small_tfidf_summary_array)
-    # topic_sentence_summary = make_summary(topic_sentences)
-    first_sentences_summary = make_summary(first_sentence_array)
+    # tfidf_summary = make_summary(tfidf_summary_array)
+    # sim_summary = make_summary(sim_summary_array)
+    # sig_summary = make_summary(sig_summary_array)
+    # rand_summary = make_summary(rand_summary_array)
+    # small_tfidf_summary = make_summary(small_tfidf_summary_array)
+    # # topic_sentence_summary = make_summary(topic_sentences)
+    # first_sentences_summary = make_summary(first_sentence_array)
 
-    print_nice_summary('Big TfIdf', tfidf_summary, test_summary)
-    print_nice_summary('Similarity', sim_summary, test_summary)
-    print_nice_summary('Significance', sig_summary, test_summary)
-    print_nice_summary('Small TfIdf', small_tfidf_summary, test_summary)
-    # print_nice_summary('Topic Sentences', topic_sentence_summary, test_summary)
-    print_nice_summary('First Sentences', first_sentences_summary, test_summary)
-    print "Random Rouge: ", str(rouge_score(rand_summary, test_summary))
+    # print_nice_summary('Big TfIdf', tfidf_summary, test_summary)
+    # print_nice_summary('Similarity', sim_summary, test_summary)
+    # print_nice_summary('Significance', sig_summary, test_summary)
+    # print_nice_summary('Small TfIdf', small_tfidf_summary, test_summary)
+    # # print_nice_summary('Topic Sentences', topic_sentence_summary, test_summary)
+    # print_nice_summary('First Sentences', first_sentences_summary, test_summary)
+    # print "Random Rouge: ", str(rouge_score(rand_summary, test_summary))
+
+    sentence_fraction = np.arange(1, len(sentences)) / float(len(sentences))
+    rouges = []
+    importance_fraction = []
+    tf_idf_norm = sorted(tfidf_full / np.sum(tfidf_full))[::-1]
+    for x in xrange(1, len(sentences)):
+        tfidf_summary_array = get_important_sentences(tfidf_full, sentences, num_sentences=x)
+        tfidf_summary = make_summary(tfidf_summary_array)
+        rouges.append(rouge_score(tfidf_summary, test_summary))
+        importance_fraction.append(np.sum(tf_idf_norm[:x]))
+
+    plt.subplot(211)
+    plt.plot(sentence_fraction, rouges)
+
+    plt.subplot(212)
+    plt.plot(sentence_fraction, importance_fraction)
+    plt.axhline(y=0.5, linewidth=2, color='r')
+
+    plt.show()

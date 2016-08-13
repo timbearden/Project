@@ -36,6 +36,8 @@ class Summarizer(object):
             self.score = self.significance_factor
         elif self.scoring == 'similarity':
             self.score = self.get_sentence_cos_sims
+        elif self.scoring=='random':
+            self.score = self.random_baseline
         else:
             print "Please pick a valid scoring metric"
 
@@ -137,25 +139,27 @@ class Summarizer(object):
         Creates tfidf scores for each sentence based off larger corpus of news articles.
         Calculates scores similarly to significance scores.
         '''
-        tfidf = vectors * self.idf
-        tfidf_scores = tfidf.sum(axis=1)
-        # tfidf_scores = []
-        # for sentence in self.sentences:
-        #     score = np.sum([tfidf[self.vocab[word.lower()]] for word in sentence.split() if word.lower() in self.vocab.keys()])
-        #     tfidf_scores.append(score)
+        tfidf = self.article_vector * self.idf
+        # tfidf_scores = tfidf.sum(axis=1)
+        tfidf_scores = []
+        for sentence in self.sentences:
+            score = np.sum([tfidf[self.vocab[word.lower()]] for word in sentence.split() if word.lower() in self.vocab.keys()])
+            tfidf_scores.append(score)
         return tfidf_scores
 
     def get_important_sentences(self, importance_ratings):
         '''
-        INPUT: scoring array, number of sentences (optional)
+        INPUT: scoring array
         OUTPUT: array of sentences
 
         Creates an array of important sentences ranked by the given scoring metric.
         '''
         sort_idx = np.argsort(importance_ratings)[::-1]
-        if self.num_sentences==None:
-            self.num_sentences = min(max(len(self.sentences)*0.10, 5), 10)
-        important_sentence_idx = sort_idx[:self.num_sentences]
+        # if self.num_sentences==None:
+        #     self.num_sentences = min(max(len(self.sentences)*0.10, 5), 10)
+        cumulative_importance = np.cumsum(importance_ratings[sort_idx] / np.sum(importance_ratings))
+        top_n = np.where(cumulative_importance < 0.5)[0]
+        important_sentence_idx = sort_idx[top_n]
         sentence_idx = np.sort(important_sentence_idx)
         summary_array = self.sentences[sentence_idx]
         return summary_array
@@ -206,7 +210,7 @@ class Summarizer(object):
         pass
 
 
-    def random_baseline(self, sentences):
+    def random_baseline(self):
         '''
         INPUT: Sentence array
         OUTPUT: array
@@ -214,7 +218,7 @@ class Summarizer(object):
         Creates an array of sentences randomly picked from the article, for the
         simplest baseline.
         '''
-        rand_scores = [random() for x in xrange(len(sentences))]
+        rand_scores = np.array([random() for x in xrange(len(self.sentences))])
         return rand_scores
 
 
@@ -242,16 +246,29 @@ class Summarizer(object):
         self.summary = self.make_summary(important_sentences)
 
 
+    def rouge(self, manual_summary):
+        return rouge_score(self.summary, manual_summary)
+
+
+
 if __name__ == '__main__':
     idf = unpickle('idf')
     vocab = unpickle('vocab')
 
     count = CountVectorizer(stop_words='english', vocabulary=vocab)
 
-    full_text = get_full_article('http://www.jsonline.com/story/news/2016/08/12/dassey-wins-ruling-teresa-halbach-murder/88632502/')
+    url = 'https://www.theguardian.com/us-news/2016/aug/13/donald-trump-claims-cheating-is-only-way-he-can-lose-pennsylvania'
+    summary_url = 'http://www.newser.com/story/229593/trump-only-cheating-can-cost-me-pennsylvania.html'
+
+    full_text = get_full_article(url)
+    manual_summary = get_summary_and_full_links(summary_url)[0]
 
     my_sum = Summarizer(vocab, idf, scoring='significance', vectorizer=count)
 
     my_sum.fit(full_text)
+    random_summary_array = my_sum.get_important_sentences(my_sum.random_baseline())
+    random_summary = my_sum.make_summary(random_summary_array)
 
     print my_sum.summary
+    print "Rouge: ", my_sum.rouge(manual_summary)
+    print "Random Rouge: ", rouge_score(random_summary, manual_summary)
