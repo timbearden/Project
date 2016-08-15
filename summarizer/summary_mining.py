@@ -11,7 +11,7 @@ def soup_it_up(url):
     INPUT: url (string)
     OUTPUT: BeautifulSoup object
     '''
-    sleep(0.25)
+    sleep(0.5)
     r = requests.get(url)
     soup = BeautifulSoup(r.text, 'html.parser')
     return soup
@@ -86,7 +86,7 @@ if __name__ == '__main__':
     base_url = "http://www.newser.com/siteindex/story/2015/"
 
     index_url_list = []
-    for month in xrange(4,7):
+    for month in xrange(7,13):
         for page in xrange(1,21):
             url = base_url + str(month) + "/" + str(page) + ".html"
             index_url_list.append(url)
@@ -95,7 +95,7 @@ if __name__ == '__main__':
     summary_urls = []
     for url in index_url_list:
         summary_urls.extend(get_summary_links(url))
-    summary_urls[1300:]
+    summary_urls = summary_urls[850:]
 
     mongo_client = MongoClient()
     db = mongo_client.g_project_data
@@ -104,5 +104,8 @@ if __name__ == '__main__':
     for url in summary_urls:
         t = threading.Thread(target=get_all_and_store, args=(url,))
         t.start()
+
+    # for url in summary_urls:
+    #     get_all_and_store(url)
 
     mongo_client.close()
