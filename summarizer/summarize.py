@@ -226,8 +226,8 @@ def print_nice_summary(title, summary, test_summary):
 
 
 if __name__ == '__main__':
-    summary_url = 'http://www.newser.com/story/229593/trump-only-cheating-can-cost-me-pennsylvania.html'
-    url = 'https://www.theguardian.com/us-news/2016/aug/13/donald-trump-claims-cheating-is-only-way-he-can-lose-pennsylvania'
+    summary_url = 'http://www.newser.com/story/229648/leaked-documents-expose-ignorance-of-isis-recruits.html'
+    url = 'http://www.newser.com/article/27c7f60045934193a768348e635d41f5/islamic-state-gets-know-nothing-recruits-and-rejoices.html'
 
     full_text = get_full_article(url)
     test_summary = get_summary_and_full_links(summary_url)[0]
@@ -252,14 +252,14 @@ if __name__ == '__main__':
 
     # similarities = get_sentence_cos_sims(sentence_tfidf_vector, article_tfidf_vector)
     # significance = significance_factor(vocab, article_count_vector, sentences)
-    tfidf_full = tfidf_corpus(article_count_vector, sentences, idf, vocab)
-    # random_scores = random_baseline(sentences)
-    # tfidf_small = tfidf_single(sentences)
+    # tfidf_full = tfidf_corpus(article_count_vector, sentences, idf, vocab)
+    random_scores = random_baseline(sentences)
+    tfidf_small = tfidf_single(sentences)
 
     # sim_summary_array = get_important_sentences(similarities, sentences, num_sentences=7)
     # sig_summary_array = get_important_sentences(significance, sentences, num_sentences=7)
     # tfidf_summary_array = get_important_sentences(tfidf_full, sentences, num_sentences=7)
-    # rand_summary_array = get_important_sentences(random_scores, sentences, num_sentences=7)
+    rand_summary_array = get_important_sentences(random_scores, sentences, num_sentences=7)
     # small_tfidf_summary_array = get_important_sentences(tfidf_small, sentences, num_sentences=7)
     # topic_sentences = just_topic_sentences(sentences)
     # first_sentence_array = first_n_sentences(sentences, 7)
@@ -267,7 +267,7 @@ if __name__ == '__main__':
     # tfidf_summary = make_summary(tfidf_summary_array)
     # sim_summary = make_summary(sim_summary_array)
     # sig_summary = make_summary(sig_summary_array)
-    # rand_summary = make_summary(rand_summary_array)
+    rand_summary = make_summary(rand_summary_array)
     # small_tfidf_summary = make_summary(small_tfidf_summary_array)
     # # topic_sentence_summary = make_summary(topic_sentences)
     # first_sentences_summary = make_summary(first_sentence_array)
@@ -283,18 +283,31 @@ if __name__ == '__main__':
     sentence_fraction = np.arange(1, len(sentences)) / float(len(sentences))
     rouges = []
     importance_fraction = []
-    tf_idf_norm = sorted(tfidf_full / np.sum(tfidf_full))[::-1]
+    sig_norm = sorted(significance / float(np.sum(significance)))[::-1]
     for x in xrange(1, len(sentences)):
-        tfidf_summary_array = get_important_sentences(tfidf_full, sentences, num_sentences=x)
-        tfidf_summary = make_summary(tfidf_summary_array)
-        rouges.append(rouge_score(tfidf_summary, test_summary))
-        importance_fraction.append(np.sum(tf_idf_norm[:x]))
+        sig_summary_array = get_important_sentences(significance, sentences, num_sentences=x)
+        sig_summary = make_summary(sig_summary_array)
+        rouges.append(rouge_score(sig_summary, test_summary))
+        importance_fraction.append(np.sum(sig_norm[:x]))
+
+    # tfidf_small_norm = sorted(tfidf_small / float(np.sum(tfidf_small)))[::-1]
+    # for x in xrange(1, len(sentences)):
+    #     tfidf_small_summary_array = get_important_sentences(tfidf_small, sentences, num_sentences=x)
+    #     tfidf_small_summary = make_summary(tfidf_small_summary_array)
+    #     rouges.append(rouge_score(tfidf_small_summary, test_summary))
+    #     importance_fraction.append(np.sum(tfidf_small_norm[:x]))
+
 
     plt.subplot(211)
     plt.plot(sentence_fraction, rouges)
+    plt.ylabel("Rouge Score")
+    # plt.axhline(y=rouge_score(rand_summary, test_summary), linewidth=2, color='r')
 
     plt.subplot(212)
     plt.plot(sentence_fraction, importance_fraction)
-    plt.axhline(y=0.5, linewidth=2, color='r')
+    plt.ylabel("Fraction of Importance")
+    plt.xlabel("Fraction of Sentences Kept")
+    # plt.axhline(y=0.5, linewidth=2, color='r')
 
     plt.show()
+    # plt.savefig('../images/length_test_plot.png')

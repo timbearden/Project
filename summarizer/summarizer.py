@@ -11,7 +11,7 @@ from Rouge import rouge_score
 
 
 class Summarizer(object):
-    def __init__(self, vocab, idf=None, scoring=None, vectorizer=None, num_sentences=7):
+    def __init__(self, vocab, idf=None, scoring=None, vectorizer=None):
         self.vocab = vocab
         self.idf = idf
         self.scoring = scoring
@@ -24,7 +24,6 @@ class Summarizer(object):
         self.sentences = None
         self.lem_sentences = None
         self.score = None
-        self.num_sentences = num_sentences
 
 
     def set_method(self):
@@ -145,7 +144,8 @@ class Summarizer(object):
         for sentence in self.sentences:
             score = np.sum([tfidf[self.vocab[word.lower()]] for word in sentence.split() if word.lower() in self.vocab.keys()])
             tfidf_scores.append(score)
-        return tfidf_scores
+        return np.array(tfidf_scores)
+
 
     def get_important_sentences(self, importance_ratings):
         '''
@@ -210,7 +210,7 @@ class Summarizer(object):
         pass
 
 
-    def random_baseline(self):
+    def random_baseline(self, vector):
         '''
         INPUT: Sentence array
         OUTPUT: array
