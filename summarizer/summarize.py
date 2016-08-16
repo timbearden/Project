@@ -226,8 +226,8 @@ def print_nice_summary(title, summary, test_summary):
 
 
 if __name__ == '__main__':
-    summary_url = 'http://www.newser.com/story/229648/leaked-documents-expose-ignorance-of-isis-recruits.html'
-    url = 'http://www.newser.com/article/27c7f60045934193a768348e635d41f5/islamic-state-gets-know-nothing-recruits-and-rejoices.html'
+    summary_url = 'http://www.newser.com/story/229736/americas-worst-methane-hot-spot-might-be-an-easy-fix.html'
+    url = 'http://www.daily-times.com/story/money/industries/oil-gas/2016/08/15/nasa-industry-source-methane-hot-spot/88763622/'
 
     full_text = get_full_article(url)
     test_summary = get_summary_and_full_links(summary_url)[0]

@@ -21,8 +21,10 @@ class Summarizer(object):
         self.article = None
         self.cleaned = None
         self.summary = None
+        self.summary_sentences = None
+        self.sentence_scores = None
         self.sentences = None
-        self.lem_sentences = None
+        self.reduction = None
         self.score = None
 
 
@@ -157,7 +159,7 @@ class Summarizer(object):
         sort_idx = np.argsort(importance_ratings)[::-1]
         # if self.num_sentences==None:
         #     self.num_sentences = min(max(len(self.sentences)*0.10, 5), 10)
-        cumulative_importance = np.cumsum(importance_ratings[sort_idx] / np.sum(importance_ratings))
+        cumulative_importance = np.cumsum(importance_ratings[sort_idx] / float(np.sum(importance_ratings)))
         top_n = np.where(cumulative_importance < 0.5)[0]
         important_sentence_idx = sort_idx[top_n]
         sentence_idx = np.sort(important_sentence_idx)
@@ -241,9 +243,10 @@ class Summarizer(object):
         cleaned = self.clean_text()
         self.sentences = np.array(sent_tokenize(cleaned))
         self.sentence_vectors = self.get_vector(self.sentences)
-        scores = self.score(self.sentence_vectors)
-        important_sentences = self.get_important_sentences(scores)
-        self.summary = self.make_summary(important_sentences)
+        self.sentence_scores = self.score(self.sentence_vectors)
+        self.summary_sentences = self.get_important_sentences(self.sentence_scores)
+        self.summary = self.make_summary(self.summary_sentences)
+        self.reduction = len(self.summary_sentences) / float(len(self.sentences))
 
 
     def rouge(self, manual_summary):
@@ -257,8 +260,8 @@ if __name__ == '__main__':
 
     count = CountVectorizer(stop_words='english', vocabulary=vocab)
 
-    url = 'https://www.theguardian.com/us-news/2016/aug/13/donald-trump-claims-cheating-is-only-way-he-can-lose-pennsylvania'
-    summary_url = 'http://www.newser.com/story/229593/trump-only-cheating-can-cost-me-pennsylvania.html'
+    url = 'http://www.nbcnews.com/politics/first-read/first-read-clinton-has-owned-airwaves-general-election-n631706'
+    summary_url = 'http://www.newser.com/story/229742/jill-stein-has-outspent-trump-on-election-ads.html'
 
     full_text = get_full_article(url)
     manual_summary = get_summary_and_full_links(summary_url)[0]
@@ -266,9 +269,10 @@ if __name__ == '__main__':
     my_sum = Summarizer(vocab, idf, scoring='significance', vectorizer=count)
 
     my_sum.fit(full_text)
-    random_summary_array = my_sum.get_important_sentences(my_sum.random_baseline())
+    random_summary_array = my_sum.get_important_sentences(my_sum.random_baseline(my_sum.sentence_vectors))
     random_summary = my_sum.make_summary(random_summary_array)
 
     print my_sum.summary
+    print "Reduction: ", my_sum.reduction, "of original sentences kept" 
     print "Rouge: ", my_sum.rouge(manual_summary)
     print "Random Rouge: ", rouge_score(random_summary, manual_summary)
