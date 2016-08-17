@@ -260,8 +260,9 @@ if __name__ == '__main__':
 
     count = CountVectorizer(stop_words='english', vocabulary=vocab)
 
-    url = 'http://www.nbcnews.com/politics/first-read/first-read-clinton-has-owned-airwaves-general-election-n631706'
-    summary_url = 'http://www.newser.com/story/229742/jill-stein-has-outspent-trump-on-election-ads.html'
+    url = 'http://www.nytimes.com/2016/08/17/us/shadow-brokers-leak-raises-alarming-question-was-the-nsa-hacked.html?_r=0'
+    # url = 'https://www.washingtonpost.com/news/morning-mix/wp/2016/08/16/son-of-chicago-cop-home-from-college-to-surprise-his-sick-mom-killed-in-mistaken-identity-shooting/'
+    summary_url = 'http://www.newser.com/story/229746/chicago-cops-teen-son-shot-dead.html'
 
     full_text = get_full_article(url)
     manual_summary = get_summary_and_full_links(summary_url)[0]
@@ -273,6 +274,6 @@ if __name__ == '__main__':
     random_summary = my_sum.make_summary(random_summary_array)
 
     print my_sum.summary
-    print "Reduction: ", my_sum.reduction, "of original sentences kept" 
+    print "Reduction: ", my_sum.reduction, "of original sentences kept"
     print "Rouge: ", my_sum.rouge(manual_summary)
     print "Random Rouge: ", rouge_score(random_summary, manual_summary)

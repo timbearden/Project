@@ -66,32 +66,32 @@ if __name__ == '__main__':
     summarizer_sim = Summarizer(vocab=vocab, idf=idf, vectorizer=count, scoring='similarity')
     summarizer_rand = Summarizer(vocab=vocab, idf=idf, vectorizer=count, scoring='random')
 
-    multi_r = []
-    multi_reduction = []
-    single_r = []
-    single_reduction = []
-    sig_r = []
-    sig_reduction = []
-    sim_r = []
-    sim_reduction = []
-    rand_r = []
-    rand_reduction = []
-    for summary, article in zip(summary_list, article_list):
+    multi_r2 = []
+    multi_reduction2 = []
+    single_r2 = []
+    single_reduction2 = []
+    sig_r2 = []
+    sig_reduction2 = []
+    sim_r2 = []
+    sim_reduction2 = []
+    rand_r2 = []
+    rand_reduction2 = []
+    for summary, article in zip(summary_list[53:], article_list[53:]):
         summarizer_multi.fit(article)
         summarizer_single.fit(article)
         summarizer_sig.fit(article)
         summarizer_sim.fit(article)
         summarizer_rand.fit(article)
-        multi_r.append(summarizer_multi.rouge(summary))
-        single_r.append(summarizer_single.rouge(summary))
-        sig_r.append(summarizer_sig.rouge(summary))
-        sim_r.append(summarizer_sim.rouge(summary))
-        rand_r.append(summarizer_rand.rouge(summary))
-        multi_reduction.append(summarizer_multi.reduction)
-        single_reduction.append(summarizer_single.reduction)
-        sig_reduction.append(summarizer_sig.reduction)
-        sim_reduction.append(summarizer_sim.reduction)
-        rand_reduction.append(summarizer_rand.reduction)
+        multi_r2.append(summarizer_multi.rouge(summary))
+        single_r2.append(summarizer_single.rouge(summary))
+        sig_r2.append(summarizer_sig.rouge(summary))
+        sim_r2.append(summarizer_sim.rouge(summary))
+        rand_r2.append(summarizer_rand.rouge(summary))
+        multi_reduction2.append(summarizer_multi.reduction)
+        single_reduction2.append(summarizer_single.reduction)
+        sig_reduction2.append(summarizer_sig.reduction)
+        sim_reduction2.append(summarizer_sim.reduction)
+        rand_reduction2.append(summarizer_rand.reduction)
 
     plt.boxplot([multi_r, single_r, sig_r, sim_r, rand_r])
     plt.ylabel('Rouge Score')

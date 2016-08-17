@@ -251,10 +251,10 @@ if __name__ == '__main__':
     # sentence_tfidf_vector = get_vector(tfidf, sentences)
 
     # similarities = get_sentence_cos_sims(sentence_tfidf_vector, article_tfidf_vector)
-    # significance = significance_factor(vocab, article_count_vector, sentences)
+    significance = significance_factor(vocab, article_count_vector, sentences)
     # tfidf_full = tfidf_corpus(article_count_vector, sentences, idf, vocab)
     random_scores = random_baseline(sentences)
-    tfidf_small = tfidf_single(sentences)
+    # tfidf_small = tfidf_single(sentences)
 
     # sim_summary_array = get_important_sentences(similarities, sentences, num_sentences=7)
     # sig_summary_array = get_important_sentences(significance, sentences, num_sentences=7)
@@ -297,17 +297,20 @@ if __name__ == '__main__':
     #     rouges.append(rouge_score(tfidf_small_summary, test_summary))
     #     importance_fraction.append(np.sum(tfidf_small_norm[:x]))
 
+    threshold = sentence_fraction[max(np.where(np.array(importance_fraction) <= 0.5)[0])]
 
     plt.subplot(211)
     plt.plot(sentence_fraction, rouges)
     plt.ylabel("Rouge Score")
+    plt.axvline(x=threshold, color='r')
     # plt.axhline(y=rouge_score(rand_summary, test_summary), linewidth=2, color='r')
 
     plt.subplot(212)
     plt.plot(sentence_fraction, importance_fraction)
     plt.ylabel("Fraction of Importance")
     plt.xlabel("Fraction of Sentences Kept")
+    plt.axvline(x=threshold, color='r')
     # plt.axhline(y=0.5, linewidth=2, color='r')
 
-    plt.show()
-    # plt.savefig('../images/length_test_plot.png')
+    # plt.show()
+    plt.savefig('../images/length_test_plot.png')
