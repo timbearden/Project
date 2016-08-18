@@ -74,23 +74,26 @@ def get_all_and_store(url):
     Runs through the urls on newser.com and stores the urls, summary, and articles into a Mongo database.
     '''
     summary, article_urls = get_summary_and_full_links(url)
-    article_urls = [link for link in article_urls if 'newser' not in link and 'youtube' not in link and 'twitter' not in link and 'soundcloud' not in link]
+    article_urls = [link for link in article_urls
+                    if 'newser' not in link and
+                    'youtube' not in link and
+                    'twitter' not in link and
+                    'soundcloud' not in link]
     if article_urls:
         full_article = [get_full_article(link) for link in article_urls]
     else:
         full_article = " "
-    coll.insert_one({'summary_url':url, 'summary':summary, 'full_url':article_urls, 'full_text':full_article})
+    coll.insert_one({'summary_url': url, 'summary': summary, 'full_url': article_urls, 'full_text': full_article})
 
 
 if __name__ == '__main__':
     base_url = "http://www.newser.com/siteindex/story/2015/"
 
     index_url_list = []
-    for month in xrange(7,13):
-        for page in xrange(1,21):
+    for month in xrange(7, 13):
+        for page in xrange(1, 21):
             url = base_url + str(month) + "/" + str(page) + ".html"
             index_url_list.append(url)
-
 
     summary_urls = []
     for url in index_url_list:

@@ -3,7 +3,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 from random import random
 from nltk import sent_tokenize, word_tokenize
-from summary_mining import get_full_article, get_summary_and_full_links
+from summary_scraping import get_full_article, get_summary_and_full_links
 from nltk.stem.wordnet import WordNetLemmatizer
 import pickle
 import re
@@ -36,21 +36,29 @@ def clean_text(text, keep_quotes=True):
     if keep_quotes:
         for i in xrange(len(split_text)):
             more_split = split_text[i].split(u'\u201d')
-            more_split[0] = more_split[0].replace('.','|')
+            more_split[0] = more_split[0].replace('.', '|')
             split_text[i] = u'\u201d'.join(more_split)
     new_text = u'\u201c'.join(split_text)
-    new_text = re.sub(r'(Advertisement.*?\n)','',text)
-    new_text = re.sub(r'(Photo.*?\n)','',new_text)
-    new_text = re.sub(r'(?<=[A-Z])\.','',new_text)
-    new_text = re.sub(r'(Related.*?\n)','',new_text)
+    new_text = re.sub(r'(Advertisement.*?\n)', '', text)
+    new_text = re.sub(r'(Photo.*?\n)', '', new_text)
+    new_text = re.sub(r'(?<=[A-Z])\.', '', new_text)
+    new_text = re.sub(r'(Related.*?\n)', '', new_text)
     new_text = '\n'.join([sentence for sentence in new_text.split('\n') if '.' in sentence])
     return new_text
 
+
 def lemmatize(article):
+    '''
+    INPUT: string
+    OUTPUT: lemmatized string
+
+    Lemmatizes all of the words in an article.
+    '''
     lem = WordNetLemmatizer()
     article_lem = ' '.join([lem.lemmatize(lem.lemmatize(word, pos ='v')) for word in article.split()])
     article_lem = ' '.join([lem.lemmatize(lem.lemmatize(word)) for word in article_lem.split()])
     return article_lem
+
 
 def get_vector(vectorizer, document, normalize=False):
     '''
@@ -69,7 +77,7 @@ def get_vector(vectorizer, document, normalize=False):
     return vector
 
 
-def significance_factor(vocab,full_vec,sentences):
+def significance_factor(vocab, full_vec, sentences):
     '''
     INPUT: vocabulary dictionary, vector array, sentence array
     OUTPUT: array
@@ -79,7 +87,8 @@ def significance_factor(vocab,full_vec,sentences):
     '''
     sentence_scores = []
     for sentence in sentences:
-        score = np.sum([full_vec[vocab[word.lower()]] for word in sentence.split() if word.lower() in vocab.keys()])
+        score = np.sum([full_vec[vocab[word.lower()]] for word in sentence.split()
+                        if word.lower() in vocab.keys()])
         sentence_scores.append(score)
     return np.array(sentence_scores)
 
@@ -109,9 +118,9 @@ def tfidf_single(sentences, n1=1, n2=1):
     Treats the entire article as a corpus of sentence documents, finds tf-idf
     scores for each sentence.
     '''
-    tfidf_vectorizer = TfidfVectorizer(stop_words='english', ngram_range=(n1,n2))
+    tfidf_vectorizer = TfidfVectorizer(stop_words='english', ngram_range=(n1, n2))
     tfidf_mat = tfidf_vectorizer.fit_transform(sentences).todense()
-    tfidf_scores = np.array(tfidf_mat.sum(axis=1).flatten())[0,:]
+    tfidf_scores = np.array(tfidf_mat.sum(axis=1).flatten())[0, :]
     return tfidf_scores
 
 
@@ -126,9 +135,11 @@ def tfidf_corpus(count_vec, sentences, idf, vocab):
     tfidf = count_vec * idf
     tfidf_scores = []
     for sentence in sentences:
-        score = np.sum([tfidf[vocab[word.lower()]] for word in sentence.split() if word.lower() in vocab.keys()])
+        score = np.sum([tfidf[vocab[word.lower()]] for word in sentence.split()
+                        if word.lower() in vocab.keys()])
         tfidf_scores.append(score)
     return np.array(tfidf_scores)
+
 
 def get_important_sentences(importance_ratings, sentences, num_sentences=None):
     '''
@@ -145,6 +156,7 @@ def get_important_sentences(importance_ratings, sentences, num_sentences=None):
     summary_array = sentences[sentence_idx]
     return summary_array
 
+
 def just_topic_sentences(sentences):
     '''
     INPUT: Sentence array
@@ -156,6 +168,7 @@ def just_topic_sentences(sentences):
     topic_sentences = sentences[topic_sentence_idx]
     return topic_sentences
 
+
 def first_n_sentences(sentences, n):
     '''
     INPUT: Sentence array, int
@@ -165,30 +178,6 @@ def first_n_sentences(sentences, n):
     '''
     first_sentences = sentences[:n]
     return first_sentences
-
-
-def naive_bayes(sentences, prior = 0.10):
-    '''
-    INPUT:
-    OUTPUT:
-    '''
-    pass
-
-
-def hidden_markov(sentences):
-    '''
-    INPUT:
-    OUTPUT:
-    '''
-    pass
-
-
-def log_linear(sentences):
-    '''
-    INPUT:
-    OUTPUT:
-    '''
-    pass
 
 
 def random_baseline(sentences):
@@ -211,7 +200,7 @@ def make_summary(summary_array):
     Takes an array of sentences for the summary and strings them together into a readable summary.
     '''
     summary = ' '.join(summary_array)
-    summary = summary.replace('\n\n','\n').replace('|','.')
+    summary = summary.replace('\n\n', '\n').replace('|', '.')
     return summary
 
 
@@ -235,15 +224,11 @@ if __name__ == '__main__':
     full_text = clean_text(full_text)
     sentences = np.array(sent_tokenize(full_text))
 
-    # lem_text = lemmatize(full_text)
-
     vocab = unpickle('vocab')
     idf = unpickle('idf')
 
-    counts = CountVectorizer(stop_words='english',vocabulary=vocab)
+    counts = CountVectorizer(stop_words='english', vocabulary=vocab)
     # tfidf = TfidfVectorizer(stop_words='english',vocabulary=vocab)
-
-    # lem_sentences = np.array(sent_tokenize(full_text))
 
     article_count_vector = get_vector(counts, [full_text])[0]
     # sentence_count_vector = get_vector(counts, sentences)

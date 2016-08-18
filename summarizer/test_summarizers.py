@@ -2,7 +2,7 @@ from pymongo import MongoClient
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from nltk import sent_tokenize, word_tokenize
 from Rouge import rouge_score
-from summarize import *
+from summarizer_dev import *
 from summarizer import Summarizer
 import matplotlib.pyplot as plt
 import seaborn
@@ -10,6 +10,14 @@ import pickle
 
 
 def get_summaries_and_articles(coll):
+    '''
+    INPUT: mongo collection object
+    OUTPUT: list of summaries, list of articles
+
+    Runs through the MongoDB and extracts all of the newser.com summaries
+    with their corresponding articles.
+    '''
+
     summary_list = []
     article_list = []
 
@@ -24,26 +32,37 @@ def get_summaries_and_articles(coll):
             text += article
         article_list[i] = text
 
-    summary_test = np.unique([summary_list[i] for i in xrange(len(summary_list)) if article_list[i] != '' and article_list[i] != ' ' and len(sent_tokenize(article_list[i])) > 10])
-    article_test = np.unique([article for article in article_list if article != '' and article_list[i] != ' ' and len(sent_tokenize(article)) > 10])
+    summary_test = np.unique([summary_list[i] for i in xrange(len(summary_list))
+                              if article_list[i] != '' and
+                              article_list[i] != ' ' and
+                              len(sent_tokenize(article_list[i])) > 10])
+    article_test = np.unique([article for article in article_list
+                              if article != '' and
+                              article_list[i] != ' ' and
+                              len(sent_tokenize(article)) > 10])
 
     return summary_test, article_test
 
 
-def make_article_vectors(article_list, vocab, normalize = False):
+def make_article_vectors(article_list, vocab, normalize=False):
+    '''
+    INPUT: list of articles, vocab dict
+    OUTPUT: array of sentences, array of vectors
+
+    Don't remember why I did this? Probably before I built the summarizer object.
+    '''
     article_vectors = []
     sentence_list = []
     for article in article_list:
         sentences = np.array(sent_tokenize(article))
         sentence_list.append(sentences)
         if normalize:
-            counts = CountVectorizer(stop_words='english',vocabulary=vocab, normalize=True)
+            counts = CountVectorizer(stop_words='english', vocabulary=vocab, normalize=True)
         else:
-            counts = CountVectorizer(stop_words='english',vocabulary=vocab)
+            counts = CountVectorizer(stop_words='english', vocabulary=vocab)
         article_count_vector = get_vector(counts, [article])[0]
         article_vectors.append(article_count_vector)
     return np.array(sentence_list), np.array(article_vectors)
-
 
 
 if __name__ == '__main__':
@@ -95,38 +114,12 @@ if __name__ == '__main__':
 
     plt.boxplot([multi_r, single_r, sig_r, sim_r, rand_r])
     plt.ylabel('Rouge Score')
+    plt.ylim((0, 0.25))
+    plt.plot()
     plt.savefig('../images/boxplot.png')
 
     plt.boxplot([multi_r, sig_r, rand_r])
     plt.ylabel('Rouge Score')
+    plt.ylim((0, 0.25))
+    plt.plot()
     plt.savefig('../images/boxplot2.png')
-    #
-    # sentence_list, article_vectors = make_article_vectors(article_list, vocab)
-    #
-    # random_rouge = []
-    # for sentences, vector, summary in zip(sentence_list, article_vectors, summary_list):
-    #     scores = random_baseline(sentences)
-    #     important_sentences = get_important_sentences(scores, sentences)
-    #     auto_summary = make_summary(important_sentences)
-    #     rouge = rouge_score(auto_summary, summary)
-    #     random_rouge.append(rouge)
-    #
-    # significance_rouge = []
-    # for sentences, vector, summary in zip(sentence_list, article_vectors, summary_list):
-    #     scores = significance_factor(vocab, vector, sentences)
-    #     important_sentences = get_important_sentences(scores, sentences)
-    #     auto_summary = make_summary(important_sentences)
-    #     rouge = rouge_score(auto_summary, summary)
-    #     significance_rouge.append(rouge)
-    #
-    # tfidf_rouge = []
-    # for sentences, vector, summary in zip(sentence_list, article_vectors, summary_list):
-    #     scores = tfidf_corpus(vector, sentences, idf, vocab)
-    #     important_sentences = get_important_sentences(scores, sentences)
-    #     auto_summary = make_summary(important_sentences)
-    #     rouge = rouge_score(auto_summary, summary)
-    #     tfidf_rouge.append(rouge)
-    #
-    # print "Random Rouge: ", str(np.mean(random_rouge))
-    # print "Significance Rouge: ", str(np.mean(significance_rouge))
-    # print "TfIdf Rouge: ", str(np.mean(tfidf_rouge))
