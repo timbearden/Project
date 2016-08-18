@@ -26,7 +26,7 @@ links = links[2:]
 
 idf = unpickle('summarizer/idf')
 vocab = unpickle('summarizer/vocab')
-count = CountVectorizer(vocabulary = vocab, stop_words = 'english')
+count = CountVectorizer(vocabulary=vocab, stop_words='english')
 
 summarizer = Summarizer(vocab=vocab, idf=idf, scoring='significance', vectorizer=count)
 
