@@ -1,6 +1,10 @@
 import requests
 import re
 from bs4 import BeautifulSoup
+from summarizer.summarizer import Summarizer
+from summarizer.summary_scraping import get_full_article
+from summarizer.summarize_dev import unpickle
+from sklearn.feature_extraction.text import CountVectorizer
 
 q = ''
 url = 'https://news.google.com/news?{}output=rss'.format(q)
@@ -14,3 +18,28 @@ titles = [title.text for title in titles]
 gross_links = soup.findAll('link')
 links = [re.findall(r'url=(.*)', link.getText()) for link in gross_links]
 links = links[2:]
+
+idf = unpickle('summarizer/idf')
+vocab = unpickle('summarizer/vocab')
+count = CountVectorizer(vocabulary = vocab, stop_words = 'english')
+
+summarizer = Summarizer(vocab=vocab, idf=idf, scoring='significance', vectorizer=count)
+
+
+summaries = []
+reductions = []
+for link in links:
+    article = get_full_article(link[0])
+    summarizer.fit(article)
+    summaries.append(summarizer.summary)
+    reductions.append(summarizer.reduction)
+
+for title, summary, reduction, link in zip(titles, summaries, reductions, links):
+    print title.upper()
+    print '-----------------------------------------'
+    print summary
+    print '-----------------------------------------'
+    print 'Size reduction:', str(reduction*100) + '% of original sentences kept'
+    print 'URL: ', link[0]
+    print '-----------------------------------------'
+    print '-----------------------------------------'

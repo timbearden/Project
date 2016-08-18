@@ -4,3 +4,5 @@ articles.csv
 credentials.json
 .DS_Store
 *.pyc
+*.png
+*.jpg
