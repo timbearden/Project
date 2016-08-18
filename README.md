@@ -1,4 +1,6 @@
-# Galvanize DSI Cohort 15 Final Project
+# Automated News Summarizer
+## Galvanize DSI Cohort 15 Final Project
+### Tim Bearden
 
 ## Quick find
 1. [Motivation](#motivation)
