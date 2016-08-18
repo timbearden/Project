@@ -6,10 +6,10 @@
 1. [Motivation](#motivation)
 2. [Summary Process](#summary-process)
   - [Evaluation](#evaluation)
-  - [Selecting a length](#selecting-length)
+  - [Selecting a length](#selecting-a-length)
   - [Scoring Process](#scoring-process)
-  - [Getting the top articles](#getting-top-articles)
-4. [Where to go from here](#where-to-go)
+  - [Getting the top articles](#getting-the-top-articles)
+4. [Where to go from here](#where-to-go-from-here)
 3. [Example Entry](#example-entry)
 
 ## Motivation
