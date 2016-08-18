@@ -6,7 +6,7 @@
   - [Evaluation](#evaluation)
   - [Selecting a length](#selecting-length)
   - [Scoring Process](#scoring-process)
-3. [Getting the top articles](#getting-top-articles)
+  - [Getting the top articles](#getting-top-articles)
 4. [Where to go from here](#where-to-go)
 3. [Example Entry](#example-entry)
 
@@ -41,14 +41,14 @@ I also experimented with a similar tactic, but using tf-idf vectors instead of s
 
 I also tested out different aggregation methods than summing. I tried calculating mean word scores for each sentence using these same vectorization techniques. This would capture more short sentences, which helps keep the summary quick, but wouldn't create very great quality summaries. I also tested out using the cosine similarity of the tf and tf-idf vectors of each sentence to the vector for the entire article, though this was not possible for the single-document version of the tf-idf score. This turned out not to be very effective either.
 
-## Getting the top articles
+#### Getting the top articles
 Originally, I had planned on using Twitter to find the most important articles of the day. My hypothesis was that the biggest news articles are going to get the highest of some combination of tweets, retweets, and likes. As it turns out, if you use Twitter to measure the popularity of different links, the only results that you will get will be articles about K-pop.
 
 As a quick fix, I am currently using Google News' RSS feed. For further expansion of this project, I would like to develop a better, more personalized way to find the most important articles of the day.  
 
 ## Where to go from here
 - Develop a better way to find the top news articles.
-- Create a way to track specific subjects, to make personalized e-mail newsletters. 
+- Create a way to track specific subjects, to make personalized e-mail newsletters.
 - Get the landing page to sign up for the mailing list up and running.
 
 ## Example Entry
