@@ -2,5 +2,9 @@
 {% block body %}
 
 <h1>This is an example.</h1>
-
+Input text or url:
+<form action="/run-example" method='POST' >
+    <input type="text" name="example_input" />
+    <input type="submit" />
+</form>
 {% endblock %}

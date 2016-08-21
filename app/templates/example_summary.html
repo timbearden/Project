@@ -1,0 +1,11 @@
+{% extends "main.html" %}
+{% block body %}
+
+  <h1>Your Summary</h1>
+  {% for summary, reduction in data %}
+  <p>{{summary}}</p>
+  <p>{{reduction}}</p>
+  {% endfor %}
+
+
+{% endblock %}
