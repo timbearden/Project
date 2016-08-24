@@ -1,7 +1,7 @@
 import requests
 import threading
 from bs4 import BeautifulSoup
-from newspaper3k import Article
+from newspaper import Article
 from pymongo import MongoClient
 from time import sleep
 
