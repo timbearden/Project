@@ -1,6 +1,7 @@
 from flask import Flask, request, render_template
 from summarizer.summarizer import Summarizer
 from summarizer.summarizer_dev import unpickle
+from summarizer.summary_scraping import get_full_article
 from sklearn.feature_extraction.text import CountVectorizer
 
 
@@ -27,9 +28,10 @@ def example():
 
 @app.route('/run-example', methods=['POST'])
 def run_example():
-    text = str(request.form['example_input'])
+    url = str(request.form['example_input'])
+    article = get_full_article(url)
     summarizer = Summarizer(vocab=vocab, vectorizer=count, scoring='significance')
-    summarizer.fit(text)
+    summarizer.fit(article)
     summary = summarizer.summary
     reduction = "Size Reduction: {}% of sentences kept".format(summarizer.reduction)
     example = [(summary, reduction)]

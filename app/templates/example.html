@@ -1,10 +1,14 @@
 {% extends "main.html" %}
 {% block body %}
 
-<h1>This is an example.</h1>
-Input text or url:
+<h2>Test the summarizer</h2>
+<p>Input the url to a news article of your choice to see the summarizer in action!</p>
+<p><b>Note: </b>It may take a minute for your summary to load.</p>
+
+Url:
 <form action="/run-example" method='POST' >
     <input type="text" name="example_input" />
     <input type="submit" />
 </form>
+
 {% endblock %}
