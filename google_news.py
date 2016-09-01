@@ -43,7 +43,7 @@ for title, summary, reduction, link in zip(titles, summaries, reductions, links)
     print '-----------------------------------------'
     print summary
     print '-----------------------------------------'
-    print 'Size reduction:', str(reduction*100) + '% of original sentences kept'
+    print 'Size reduction:', str(round(reduction*100,2)) + '% of original sentences kept'
     print 'URL: ', link[0]
     print '-----------------------------------------'
     print '-----------------------------------------'

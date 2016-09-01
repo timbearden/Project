@@ -68,3 +68,10 @@ Clinton 50%, Trump 41%: Meanwhile, the latest weekly national NBC.SurveyMonkey o
 
 Rouge:  0.195804195804
 Random Rouge:  0.0559440559441
+
+## Sources
+- Das, Dipanjan, and André F.T. Martins. "A Survey on Automatic Text Summarization." N.p., 21 Nov. 2007. Web
+- Lin, Chin-Yew, and Eduard Hovy. "The Automated Acquisition of Topic Signatures for Text Summarization." Proceedings of the 18th Conference on Computational Linguistics (2000): n. pag. Print.
+- Lin, Chin-Yew. "ROUGE: A Package for Automatic Evaluation of Summaries." (n.d.): n. pag. Web.
+- Lin, Chin-Yew. ROUGE. ROUGE: Recall-Oriented Understudy of Gisting Evaluation. N.p., n.d. Web.
+- "Newser: Headline News Summaries." Newser: Headline News Summaries. Ed. Neal Colgrass. Newser, n.d. Web. 14 Aug. 2016.

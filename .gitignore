@@ -6,6 +6,8 @@ credentials.json
 *.pyc
 *.png
 *.jpg
+*.pdf
+*.mp4
 summarizer/multi_r
 summarizer/single_r
 summarizer/sig_r
