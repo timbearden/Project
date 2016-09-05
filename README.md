@@ -51,7 +51,6 @@ As a quick fix, I am currently using Google News' RSS feed. For further expansio
 ## Where to go from here
 - Develop a better way to find the top news articles.
 - Create a way to track specific subjects, to make personalized e-mail newsletters.
-- Get the landing page to sign up for the mailing list up and running.
 
 ## Example Entry
 #### First Read: Clinton Has Owned the Airwaves in the General Election
