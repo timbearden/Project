@@ -2,6 +2,7 @@ from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
 from tweepy import Stream
 import json
+import sys
 
 with open('data/credentials.json') as f:
     credentials = json.load(f)
@@ -33,4 +34,5 @@ if __name__ == '__main__':
     stream = Stream(auth, l)
 
     #This line filter Twitter Streams to capture data by the keywords: 'article'
-    stream.filter(track=['article'])
+    keyword = sys.argv[1]
+    stream.filter(track=[keyword])

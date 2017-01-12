@@ -11,14 +11,14 @@ from sklearn.feature_extraction.text import CountVectorizer
 # if q == '10':
 #     url = 'https://news.google.com/news?output=rss'
 # else:
-#     url = 'https://news.google.com/news?q={}%output=rss'.format(q)
+#     url = 'https://news.google.com/news?q={}&output=rss'.format(q)
 
 url = 'https://news.google.com/news?output=rss'
 r = requests.get(url)
 soup = BeautifulSoup(r.text, 'html.parser')
 
 titles = soup.findAll('title')[2:]
-titles = [title.text for title in titles]
+titles = [title.text.replace("&apos;","'") for title in titles]
 
 gross_links = soup.findAll('link')
 links = [re.findall(r'url=(.*)', link.getText()) for link in gross_links]
