@@ -70,7 +70,7 @@ class Summarizer(object):
 
     def get_vector(self, document, normalize=False):
         '''
-        INPUT: vectorizer object, list/array of document(s), bool (optional)
+        INPUT: list/array of document(s), bool (optional)
         OUTPUT: vectorized array
 
         Creates a single vector if given the full news article, or creates an array of vectors
@@ -155,7 +155,7 @@ class Summarizer(object):
         '''
         sort_idx = np.argsort(importance_ratings)[::-1]
         cumulative_importance = np.cumsum(importance_ratings[sort_idx] / float(np.sum(importance_ratings)))
-        top_n = np.where(cumulative_importance < 0.5)[0]
+        top_n,  = np.where(cumulative_importance < 0.5)[0]
         important_sentence_idx = sort_idx[top_n]
         sentence_idx = np.sort(important_sentence_idx)
         summary_array = self.sentences[sentence_idx]
