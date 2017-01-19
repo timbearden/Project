@@ -47,7 +47,7 @@ class Summarizer(object):
         important_sentence_idx = sort_idx[top_n]
         sentence_idx = np.sort(important_sentence_idx)
         summary_array = self.sentences[sentence_idx]
-        self.summary = ' '.join(summary_array)
+        self.summary = ' '.join(summary_array).replace('|', '.')
         self.reduction = len(summary_array) / float(len(self.sentences))
 
 

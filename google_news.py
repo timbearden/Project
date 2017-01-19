@@ -54,4 +54,7 @@ for summarizer in summarizer_list:
     if summarizer.article != 'Parsing Error':
         email += summarizer.formatted
 
-send_email(email)
+with open('email.html') as f:
+    html = ''.join(f.readlines())
+
+# send_email(email, html)
