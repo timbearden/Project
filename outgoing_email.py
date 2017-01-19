@@ -19,7 +19,7 @@ def send_email(html):
     # msg.attach(MIMEText(text, 'plain'))
     msg.attach(MIMEText(html, 'html'))
 
-    fp = open('BriefNewsLogo.png', 'rb')
+    fp = open('brief-news-logo.png', 'rb')
     msgImage = MIMEImage(fp.read())
     fp.close()
 

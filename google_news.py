@@ -6,6 +6,7 @@ from summarizer.summary_scraping import get_full_article
 from summarizer.summarizer_dev import unpickle
 from sklearn.feature_extraction.text import CountVectorizer
 from outgoing_email import send_email
+from newsletter import Newsletter
 
 # q = raw_input('What would you like to read about? (Put "10" if you just want the \
 # top ten news articles) ')
@@ -18,18 +19,21 @@ url = 'https://news.google.com/news?output=rss'
 
 r = requests.get(url)
 soup = BeautifulSoup(r.text, 'html.parser')
-#
-# titles = soup.findAll('title')[2:]
-# titles = [title.text.replace("&apos;","'") for title in titles]
+
+titles = soup.findAll('title')[2:]
+titles = [title.text for title in titles]
 
 gross_links = soup.findAll('link')
-links = [re.findall(r'url=(.*)', link.getText())[0] for link in gross_links[2:]]
+links = [re.findall(r'url=(.*)', link.getText())[0].encode('utf-8') for link in gross_links[2:]]
 
 vectorizer = CountVectorizer(stop_words = 'english', encoding = 'utf-8')
 
 summarizer_list = []
-for url in links:
-    summarizer_list.append(Summarizer(url, vectorizer))
+for url, title in zip(links, titles):
+    try:
+        summarizer_list.append(Summarizer(url, vectorizer, title = title))
+    except ValueError:
+        pass
 
 
 # idf = unpickle('summarizer/idf')
@@ -46,14 +50,14 @@ for url in links:
 #     summaries.append(summarizer.summary)
 #     reductions.append(summarizer.reduction)
 #
-email = ''
-for summarizer in summarizer_list:
-    summarizer.summarize()
-    summarizer.format_summary()
-    if summarizer.article != 'Parsing Error':
-        email += summarizer.formatted
+# email = ''
+# for summarizer in summarizer_list:
+#     summarizer.summarize()
+#     summarizer.format_summary()
+#     if summarizer.article != 'Parsing Error':
+#         email += summarizer.formatted
 
-with open('email.html') as f:
-    html = ''.join(f.readlines())
+n = Newsletter(summarizer_list)
+n.construct_html()
 
-# send_email(email, html)
+send_email(n.html)

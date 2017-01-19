@@ -7,45 +7,52 @@ import re
 
 class Summarizer(object):
 
-    def __init__(self, url, vectorizer):
+    def __init__(self, url, vectorizer, title = None):
         self.url = url
-        self.article = None
-        self.title = None
+        self.article = ''
+        self.title = title
         self.sentences = None
-        self.summary = None
+        self.summary = ''
         self.vectorizer = vectorizer
-        self.reduction = None
-        self.rouge_score = None
+        self.reduction = 0.0
+        self.rouge_score = 0.0
         self.formatted = ''
 
     def get_article(self):
         a = Article(self.url)
         a.download()
+
         try:
             a.parse()
             self.article = self.clean_text(a.text).encode('utf-8')
-            self.title = a.title.encode('utf-8')
+            if self.title is None:
+                self.title = a.title.encode('utf-8')
         except ValueError:
             self.article = 'Parsing Error'
             self.title = 'Parsing Error'
+
         self.sentences = np.array(sent_tokenize(self.article))
 
 
     def summarize(self):
         self.get_article()
+
         full_vec = np.array(self.vectorizer.fit_transform([self.article]).todense())[0]
         vocab = self.vectorizer.fit([self.article]).vocabulary_
+
         score_arr = []
         for sentence in self.sentences:
             words = word_tokenize(sentence)
             score = np.sum([full_vec[vocab[word.lower()]] for word in words if word.lower() in vocab.keys()])
             score_arr.append(score)
         score_arr = np.array(score_arr)
+
         sort_idx = np.argsort(score_arr)[::-1]
         cumulative_importance = np.cumsum(score_arr[sort_idx] / float(np.sum(score_arr)))
         top_n, = np.where(cumulative_importance < 0.5)
         important_sentence_idx = sort_idx[top_n]
         sentence_idx = np.sort(important_sentence_idx)
+
         summary_array = self.sentences[sentence_idx]
         self.summary = ' '.join(summary_array).replace('|', '.')
         self.reduction = len(summary_array) / float(len(self.sentences))
