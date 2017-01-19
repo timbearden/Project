@@ -1,6 +1,8 @@
 import smtplib
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
+from email.MIMEImage import MIMEImage
+
 
 def send_email(html):
     addressees = ['tbearden89@gmail.com']
@@ -16,6 +18,14 @@ def send_email(html):
 
     # msg.attach(MIMEText(text, 'plain'))
     msg.attach(MIMEText(html, 'html'))
+
+    fp = open('BriefNewsLogo.png', 'rb')
+    msgImage = MIMEImage(fp.read())
+    fp.close()
+
+    msgImage.add_header('Content-ID', '<image1>')
+    msg.attach(msgImage)
+
 
     server = smtplib.SMTP_SSL('smtp.zoho.com', 465)
     server.ehlo()

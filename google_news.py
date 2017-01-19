@@ -1,12 +1,11 @@
 import requests
 import re
 from bs4 import BeautifulSoup
-# from summarizer.summarizer import Summarizer
+from summarizer.summarizer import Summarizer
 from summarizer.summary_scraping import get_full_article
 from summarizer.summarizer_dev import unpickle
 from sklearn.feature_extraction.text import CountVectorizer
 from outgoing_email import send_email
-from summarizer2 import Summarizer
 
 # q = raw_input('What would you like to read about? (Put "10" if you just want the \
 # top ten news articles) ')

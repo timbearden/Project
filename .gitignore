@@ -1,4 +1,6 @@
 twitter_data.txt
+summarizer_dev.py
+summarizer_dep.py
 tweets.csv
 articles.csv
 credentials.json
