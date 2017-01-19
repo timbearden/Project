@@ -70,6 +70,15 @@ class Newsletter(object):
                 body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
                 table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
                 img { -ms-interpolation-mode: bicubic; }
+                hr {
+                    display: block;
+                    -webkit-margin-before: 0.5em;
+                    -webkit-margin-after: 0.5em;
+                    -webkit-margin-start: auto;
+                    -webkit-margin-end: auto;
+                    border-style: inset;
+                    border-width: 1px;
+                }
                 /* RESET STYLES */
                 img { border: 0; outline: none; text-decoration: none; }
                 table { border-collapse: collapse !important; }
@@ -108,8 +117,7 @@ class Newsletter(object):
 
 
 
-        email_body = '''
-            <body style="margin:0; padding:0; background-color:#F2F2F2;">
+        email_body = '''<body style="margin:0; padding:0; background-color:#F2F2F2;">
               <center>
                 <table width="100%" border="0" cellpadding="0" cellspacing="0" bgcolor="#F2F2F2">
                   <tr>

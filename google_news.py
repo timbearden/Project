@@ -49,13 +49,10 @@ for url, title in zip(links, titles):
 #     summarizer.fit(article)
 #     summaries.append(summarizer.summary)
 #     reductions.append(summarizer.reduction)
-#
-# email = ''
-# for summarizer in summarizer_list:
-#     summarizer.summarize()
-#     summarizer.format_summary()
-#     if summarizer.article != 'Parsing Error':
-#         email += summarizer.formatted
+
+
+for summarizer in summarizer_list:
+    summarizer.summarize()
 
 n = Newsletter(summarizer_list)
 n.construct_html()
