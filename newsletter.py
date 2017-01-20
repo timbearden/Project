@@ -25,9 +25,31 @@ class Newsletter(object):
     def construct_html(self):
         summaries = [self.format_article(summarizer) for summarizer in self.summarizer_list]
 
-        main_text = ''
+        main_text = '''<table width="640" cellpadding="0" cellspacing="0" border="0" class="wrapper" bgcolor="#FFFFFF">
+                            <tr>
+                              <td height="10" style="font-size:10px; line-height:10px;">&nbsp;</td>
+                            </tr>
+                            <tr>
+                              <td align="center" valign="top">
 
-        for summary in summaries:
+                                <table width="600" cellpadding="0" cellspacing="0" border="0" class="container">
+                                  <tr>
+                                    <td width="300" class="mobile" align="left" valign="top">
+                                      {}
+                                    </td>
+                                  </tr>
+                                </table>
+
+                              </td>
+                            </tr>
+                            <tr>
+                              <td height="10" style="font-size:10px; line-height:10px;">&nbsp;</td>
+                            </tr>
+                          </table>'''.format(summaries.pop(0))
+
+        summaries = sorted(summaries, key = lambda summary: len(summary))
+
+        for i in xrange(0, len(summaries) - 1, 2):
             main_text += '''<table width="640" cellpadding="0" cellspacing="0" border="0" class="wrapper" bgcolor="#FFFFFF">
                                 <tr>
                                   <td height="10" style="font-size:10px; line-height:10px;">&nbsp;</td>
@@ -40,6 +62,9 @@ class Newsletter(object):
                                         <td width="300" class="mobile" align="left" valign="top">
                                           {}
                                         </td>
+                                        <td width="300" class="mobile" align="left" valign="top">
+                                          {}
+                                        </td>
                                       </tr>
                                     </table>
 
@@ -48,7 +73,29 @@ class Newsletter(object):
                                 <tr>
                                   <td height="10" style="font-size:10px; line-height:10px;">&nbsp;</td>
                                 </tr>
-                              </table>'''.format(summary)
+                              </table>'''.format(summaries[i], summaries[i + 1])
+
+        main_text += '''<table width="640" cellpadding="0" cellspacing="0" border="0" class="wrapper" bgcolor="#FFFFFF">
+                            <tr>
+                              <td height="10" style="font-size:10px; line-height:10px;">&nbsp;</td>
+                            </tr>
+                            <tr>
+                              <td align="center" valign="top">
+
+                                <table width="600" cellpadding="0" cellspacing="0" border="0" class="container">
+                                  <tr>
+                                    <td width="300" class="mobile" align="left" valign="top">
+                                      {}
+                                    </td>
+                                  </tr>
+                                </table>
+
+                              </td>
+                            </tr>
+                            <tr>
+                              <td height="10" style="font-size:10px; line-height:10px;">&nbsp;</td>
+                            </tr>
+                          </table>'''.format(summaries[-1])
 
 
 
